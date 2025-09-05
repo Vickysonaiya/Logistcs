@@ -2,8 +2,8 @@ import React, { useState, useRef } from 'react';
 import { ArrowLeft, Info, Truck, MapPin, Package, FileText, Upload, Shield } from 'lucide-react';
 
 export default function ShippingOrderForm() {
-  const [lrCreation, setLrCreation] = useState('manual');
-  const [paymentMode, setPaymentMode] = useState('prepaid');
+  const [lrCreation, setLrCreation] = useState('');
+  const [paymentMode, setPaymentMode] = useState('');
   const [insurance, setInsurance] = useState('');
   const [formData, setFormData] = useState({
     lrNumber: '',
