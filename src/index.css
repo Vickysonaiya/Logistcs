@@ -7,6 +7,16 @@ Document
 ========
 */
 
+.barcode-blur {
+  filter: blur(3px);
+  transition: filter 0.3s;
+}
+@media print {
+  .barcode-blur {
+    filter: none !important;
+  }
+}
+
 /**
 Use a better box model (opinionated).
 */
