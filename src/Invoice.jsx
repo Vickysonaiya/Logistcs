@@ -108,22 +108,17 @@ export default function Invoice() {
           </table>
         </div>
 
-        {/* Total Section */}
-        <div className="flex mb-2">
-          <div className="bg-red-600 text-white p-2 font-bold text-center w-48">
-            Grand total
+        {/* Total Section: Grand Total and COD side by side */}
+        <div className="flex mb-4 gap-4">
+          {/* Grand Total */}
+          <div className="flex flex-col flex-1">
+            <div className="bg-red-600 text-white p-2 font-bold text-center">Grand total</div>
+            <div className="bg-green-500 text-white p-2 font-bold text-center">{invoiceData.grandTotal}</div>
           </div>
-          <div className="bg-green-500 text-white p-2 font-bold text-center w-48">
-            {invoiceData.grandTotal}
-          </div>
-        </div>
-
-        <div className="flex mb-4">
-          <div className="bg-yellow-400 text-black p-2 font-bold text-center w-48">
-            COD
-          </div>
-          <div className="bg-green-500 text-white p-2 font-bold text-center w-48">
-            {invoiceData.grandTotal}
+          {/* COD */}
+          <div className="flex flex-col flex-1">
+            <div className="bg-yellow-400 text-black p-2 font-bold text-center">COD</div>
+            <div className="bg-red-600 text-white p-2 font-bold text-center">{invoiceData.grandTotal}</div>
           </div>
         </div>
 
