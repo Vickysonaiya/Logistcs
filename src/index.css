@@ -17,6 +17,10 @@ Document
   }
 }
 
+.pincode{
+  margin-left: 290px;
+}
+
 /**
 Use a better box model (opinionated).
 */
