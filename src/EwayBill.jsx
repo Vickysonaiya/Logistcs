@@ -54,10 +54,6 @@ export default function ShippingForm() {
     others: false
   });
 
-  const handleInputChange = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-  };
-
   const handleCheckboxChange = (field) => {
     setFormData(prev => ({ ...prev, [field]: !prev[field] }));
   };
