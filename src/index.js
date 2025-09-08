@@ -6,6 +6,7 @@ import App from './App';
 import Invoice from './Invoice';
 import Eway from './EwayBill';
 import Shipping from './ShippingBill';
+import Mobile from './Mobile';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
@@ -17,6 +18,7 @@ root.render(
         <Route path="/invoice" element={<Invoice />} />
         <Route path="/EwayBill" element={<Eway />} />
         <Route path="/Shipping" element={<Shipping />} />
+        <Route path="/Mobile" element={<Mobile />} />
       </Routes>
     </BrowserRouter>
   </React.StrictMode>
