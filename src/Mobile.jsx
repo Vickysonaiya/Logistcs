@@ -211,7 +211,7 @@ export default function MobilePage() {
             sx={{ bgcolor: activePage === "accessories" ? "black" : "white", color: activePage === "accessories" ? "white" : "black" }}
             onClick={() => setActivePage("accessories")}
           >
-            History
+            Accessories
           </Button>
         </Grid>
         <Grid item>
