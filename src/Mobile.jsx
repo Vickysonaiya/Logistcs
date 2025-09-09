@@ -174,13 +174,18 @@ const BoxLabelModal = ({ open, handleClose, companyOptions, modelOptions, priceM
     printWindow.document.write('<style>@media print { body { margin: 0; } }</style>');
     printWindow.document.write("</head><body>");
     printWindow.document.write(printContent.innerHTML);
-    printWindow.document.write("</body></html>");
     printWindow.document.close();
     printWindow.focus();
     printWindow.print();
   };
 
   const availableModels = modelOptions[formData.company] || [];
+
+  // New logic for box label content
+  const modelsAndStockString = formData.items
+    .filter(item => item.model && item.stock)
+    .map(item => `${item.model} (${item.stock})`)
+    .join(', ');
 
   return (
     <Modal open={open} onClose={handleClose}>
@@ -289,37 +294,14 @@ const BoxLabelModal = ({ open, handleClose, companyOptions, modelOptions, priceM
           <Typography variant="h5" sx={{ fontWeight: "bold" }}>
             {formData.company}
           </Typography>
-          {formData.items.length > 0 && (
-            <List dense sx={{ width: "100%", maxWidth: 360, mx: "auto" }}>
-              {formData.items.map((item, index) => (
-                <ListItem key={index} disablePadding>
-                  <ListItemText
-                    primary={item.model}
-                    secondary={`Stock: ${item.stock}`}
-                    primaryTypographyProps={{
-                      variant: "h6",
-                      fontWeight: "bold",
-                    }}
-                    secondaryTypographyProps={{
-                      variant: "body1",
-                    }}
-                  />
-                </ListItem>
-              ))}
-            </List>
-          )}
+          <Typography variant="h6" sx={{ mt: 1 }}>
+            {modelsAndStockString}
+          </Typography>
           {formData.sellingPrice && (
             <Box sx={{ mt: 2 }}>
               <Typography variant="body1">
-                Price: ₹{formData.sellingPrice}
+                Price: {encodePrice(formData.sellingPrice, priceMap)}
               </Typography>
-              <Barcode
-                value={encodePrice(formData.sellingPrice, priceMap)}
-                width={2}
-                height={80}
-                fontSize={16}
-                displayValue
-              />
             </Box>
           )}
         </Box>
@@ -552,17 +534,16 @@ const AccessoriesEntryForm = ({ formData, setFormData, onSave, historyData, open
   };
   
   const handleSave = () => {
-    // Generate an entry for each model
-    const entries = formData.items.map((item) => ({
-      id: Date.now() + Math.random(), // Unique ID for each item
+    // Generate a single entry for the combined models
+    const combinedEntry = {
+      id: Date.now(),
       company: formData.company,
-      model: item.model,
       sellingPrice: formData.sellingPrice,
       mrp: formData.mrp,
-      stock: item.stock,
       guarantee: formData.guarantee,
-    }));
-    onSave(entries);
+      models: formData.items, // Store all selected models and their stock
+    };
+    onSave([combinedEntry]);
     setFormData({
       company: "",
       sellingPrice: "",
@@ -719,13 +700,13 @@ const AccessoriesEntryForm = ({ formData, setFormData, onSave, historyData, open
                 }}
               >
                 <Typography variant="body1">
-                  <strong>Model:</strong> {item.company} {item.model}
+                  <strong>Company:</strong> {item.company}
+                </Typography>
+                <Typography variant="body2">
+                  <strong>Models:</strong> {item.models.map(m => `${m.model} (${m.stock})`).join(', ')}
                 </Typography>
                 <Typography variant="body2">
                   <strong>Price:</strong> ₹{item.sellingPrice}
-                </Typography>
-                <Typography variant="body2">
-                  <strong>Stock:</strong> {item.stock}
                 </Typography>
                 <Typography variant="body2">
                   <strong>Guarantee:</strong> {item.guarantee || "N/A"}
@@ -869,7 +850,7 @@ const SettingsPage = ({
 
         // Update Accessories Data
         const updatedAccessoriesData = accessoriesData.map((item) =>
-          item.company === company && item.model === model
+          item.company === company && item.models.some(m => m.model === model)
             ? { ...item, sellingPrice: parsedPrice }
             : item
         );
