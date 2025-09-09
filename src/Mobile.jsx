@@ -24,9 +24,7 @@ import SaveIcon from "@mui/icons-material/Save";
 import { green } from "@mui/material/colors";
 
 // --- Mock Data for Dropdowns and State ---
-// This data will now be part of the main app's state
-// and passed down to the components.
-const initialCompanyOptions = ["Samsung", "Apple", "Xiaomi", "OnePlus", "Oppo", "Vivo"];
+const initialCompanyOptions = ["Samsung", "Apple", "Xiaomi", "OnePlus", "Oppo", "Vivo", "JBL", "Boat", "Sony"];
 const initialModelOptions = {
   Samsung: ["Galaxy S23", "Galaxy A54", "Galaxy M34"],
   Apple: ["iPhone 14", "iPhone 13", "iPhone SE"],
@@ -34,6 +32,9 @@ const initialModelOptions = {
   OnePlus: ["OnePlus 11", "OnePlus Nord 3"],
   Oppo: ["Oppo Reno 10", "Oppo F23"],
   Vivo: ["Vivo V27", "Vivo T2"],
+  JBL: ["Tune 510BT", "Go 3", "Flip 6"],
+  Boat: ["Airdopes 141", "Rockierz 550", "BassHeads 900"],
+  Sony: ["WH-CH510", "SRS-XB13", "WF-C500"],
 };
 const RAM_OPTIONS = ["2GB", "4GB", "6GB", "8GB", "12GB"];
 const initialPriceMap = {
@@ -64,6 +65,12 @@ const BarcodeModal = ({ open, handleClose, item, priceMap }) => {
 
   const encodedPrice = encodePrice(item.sellingPrice, priceMap);
   const barcodeValue = item.imei || encodedPrice;
+  
+  // Set the target dimensions for the barcode
+  const barcodeWidth = 2; // Corresponds to a specific width on the printout
+  const barcodeHeight = 80; // Corresponds to a specific height on the printout
+  const labelWidth = "2in";
+  const labelHeight = "1in";
 
   const handlePrint = () => {
     const printContent = document.getElementById("barcode-print-content");
@@ -102,12 +109,12 @@ const BarcodeModal = ({ open, handleClose, item, priceMap }) => {
           <CloseIcon />
         </IconButton>
 
-        <Box id="barcode-print-content">
+        <Box id="barcode-print-content" sx={{ width: labelWidth, height: labelHeight, overflow: "hidden" }}>
           <Typography variant="h6" sx={{ fontWeight: "bold", mb: 1 }}>
             {item.company} - {item.model}
           </Typography>
           <Typography variant="body1" sx={{ mb: 1 }}>
-            {item.storage} | {item.ram}
+            {item.storage ? `${item.storage} |` : ''} {item.ram ? `${item.ram}`: ''}
           </Typography>
           <Typography variant="h5" sx={{ fontWeight: "bold" }}>
             Price: ₹{item.sellingPrice}
@@ -116,8 +123,8 @@ const BarcodeModal = ({ open, handleClose, item, priceMap }) => {
             {item.imei ? "IMEI" : "Price Code"}: {barcodeValue}
           </Typography>
 
-          <Box sx={{ mt: 2 }}>
-            <Barcode value={barcodeValue} width={2} height={80} fontSize={16} displayValue />
+          <Box sx={{ mt: 1 }}>
+            <Barcode value={barcodeValue} width={barcodeWidth} height={barcodeHeight} fontSize={16} displayValue />
           </Box>
         </Box>
         <Button
@@ -331,8 +338,8 @@ const BoxLabelModal = ({ open, handleClose, companyOptions, modelOptions, priceM
   );
 };
 
-// --- Reusable Form Component ---
-const EntryForm = ({ formData, setFormData, onSave, historyData, openBarcodeModal, companyOptions, modelOptions }) => {
+// --- Reusable Mobile Form Component ---
+const MobileEntryForm = ({ formData, setFormData, onSave, historyData, openBarcodeModal, companyOptions, modelOptions }) => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value, ...(name === "company" && { model: "" }) }));
@@ -514,6 +521,236 @@ const EntryForm = ({ formData, setFormData, onSave, historyData, openBarcodeModa
     </>
   );
 };
+
+
+// --- New Accessories Form Component ---
+const AccessoriesEntryForm = ({ formData, setFormData, onSave, historyData, openBarcodeModal, companyOptions, modelOptions }) => {
+  const handleCompanyChange = (e) => {
+    setFormData((prev) => ({
+      ...prev,
+      company: e.target.value,
+      items: [{ model: "", stock: "" }],
+    }));
+  };
+
+  const handleAddModel = () => {
+    setFormData((prev) => ({
+      ...prev,
+      items: [...prev.items, { model: "", stock: "" }],
+    }));
+  };
+
+  const handleItemChange = (index, field, value) => {
+    const newItems = [...formData.items];
+    newItems[index][field] = value;
+    setFormData({ ...formData, items: newItems });
+  };
+
+  const handleDeleteItem = (index) => {
+    const newItems = formData.items.filter((_, i) => i !== index);
+    setFormData({ ...formData, items: newItems });
+  };
+  
+  const handleSave = () => {
+    // Generate an entry for each model
+    const entries = formData.items.map((item) => ({
+      id: Date.now() + Math.random(), // Unique ID for each item
+      company: formData.company,
+      model: item.model,
+      sellingPrice: formData.sellingPrice,
+      mrp: formData.mrp,
+      stock: item.stock,
+      guarantee: formData.guarantee,
+    }));
+    onSave(entries);
+    setFormData({
+      company: "",
+      sellingPrice: "",
+      mrp: "",
+      guarantee: "",
+      items: [{ model: "", stock: "" }],
+    });
+  };
+
+  const availableModels = modelOptions[formData.company] || [];
+
+  return (
+    <>
+      <Grid item xs={12} sm={6}>
+        <TextField
+          select
+          fullWidth
+          label="Company Name"
+          name="company"
+          value={formData.company}
+          onChange={handleCompanyChange}
+          required
+        >
+          {companyOptions.map((option) => (
+            <MenuItem key={option} value={option}>
+              {option}
+            </MenuItem>
+          ))}
+        </TextField>
+      </Grid>
+      <Grid item xs={12} sm={6}>
+        <TextField
+          fullWidth
+          label="Selling Price"
+          name="sellingPrice"
+          type="number"
+          value={formData.sellingPrice}
+          onChange={(e) => setFormData({ ...formData, sellingPrice: e.target.value })}
+          required
+        />
+      </Grid>
+      <Grid item xs={12} sm={6}>
+        <TextField
+          fullWidth
+          label="MRP Price"
+          name="mrp"
+          type="number"
+          value={formData.mrp}
+          onChange={(e) => setFormData({ ...formData, mrp: e.target.value })}
+        />
+      </Grid>
+      <Grid item xs={12} sm={6}>
+        <TextField
+          fullWidth
+          label="Guarantee"
+          name="guarantee"
+          value={formData.guarantee}
+          onChange={(e) => setFormData({ ...formData, guarantee: e.target.value })}
+        />
+      </Grid>
+
+      {/* Dynamic Model & Stock Fields */}
+      <Grid item xs={12}>
+        <Typography variant="subtitle1" sx={{ mt: 2, fontWeight: "bold" }}>
+          Models and Stock:
+        </Typography>
+      </Grid>
+      {formData.items.map((item, index) => (
+        <Grid container item spacing={2} key={index} alignItems="center">
+          <Grid item xs={5}>
+            <TextField
+              select
+              fullWidth
+              label={`Model ${index + 1}`}
+              value={item.model}
+              onChange={(e) => handleItemChange(index, "model", e.target.value)}
+              disabled={!formData.company}
+            >
+              {availableModels.length > 0 ? (
+                availableModels.map((option) => (
+                  <MenuItem key={option} value={option}>
+                    {option}
+                  </MenuItem>
+                ))
+              ) : (
+                <MenuItem disabled>Select a Company first</MenuItem>
+              )}
+            </TextField>
+          </Grid>
+          <Grid item xs={4}>
+            <TextField
+              fullWidth
+              label="Stock"
+              type="number"
+              value={item.stock}
+              onChange={(e) => handleItemChange(index, "stock", e.target.value)}
+            />
+          </Grid>
+          <Grid item xs={3}>
+            <IconButton onClick={() => handleDeleteItem(index)} aria-label="delete">
+              <DeleteIcon color="error" />
+            </IconButton>
+          </Grid>
+        </Grid>
+      ))}
+
+      <Grid item xs={12}>
+        <Button
+          variant="outlined"
+          startIcon={<AddIcon />}
+          onClick={handleAddModel}
+          disabled={!formData.company}
+          sx={{ mt: 1, color: "black", borderColor: "black" }}
+        >
+          Add Another Model
+        </Button>
+      </Grid>
+
+      <Grid item xs={12}>
+        <Button
+          variant="contained"
+          sx={{ bgcolor: "black", color: "white", mt: 2 }}
+          onClick={handleSave}
+          disabled={!formData.company || !formData.sellingPrice || formData.items.some(item => !item.model || !item.stock)}
+        >
+          Save Entry
+        </Button>
+      </Grid>
+      
+      {/* --- History Section --- */}
+      <Grid item xs={12}>
+        <Typography variant="h6" sx={{ mt: 4, mb: 2, fontWeight: "bold" }}>
+          Entry History
+        </Typography>
+      </Grid>
+      {historyData.length === 0 ? (
+        <Grid item xs={12}>
+          <Typography>No data added yet.</Typography>
+        </Grid>
+      ) : (
+        historyData
+          .slice()
+          .reverse()
+          .map((item) => (
+            <Grid item xs={12} sm={6} md={4} key={item.id}>
+              <Box
+                sx={{
+                  border: "1px solid #ccc",
+                  borderRadius: "4px",
+                  p: 2,
+                  bgcolor: "white",
+                  boxShadow: 1,
+                  position: "relative",
+                }}
+              >
+                <Typography variant="body1">
+                  <strong>Model:</strong> {item.company} {item.model}
+                </Typography>
+                <Typography variant="body2">
+                  <strong>Price:</strong> ₹{item.sellingPrice}
+                </Typography>
+                <Typography variant="body2">
+                  <strong>Stock:</strong> {item.stock}
+                </Typography>
+                <Typography variant="body2">
+                  <strong>Guarantee:</strong> {item.guarantee || "N/A"}
+                </Typography>
+
+                <IconButton
+                  aria-label="view barcode"
+                  onClick={() => openBarcodeModal(item)}
+                  sx={{
+                    position: "absolute",
+                    top: 8,
+                    right: 8,
+                    color: "#f44336",
+                  }}
+                >
+                  <VisibilityIcon />
+                </IconButton>
+              </Box>
+            </Grid>
+          ))
+      )}
+    </>
+  );
+};
+
 
 // --- New Settings Page Component ---
 const SettingsPage = ({
@@ -888,12 +1125,10 @@ export default function MobilePage() {
 
   const [accessoryForm, setAccessoryForm] = useState({
     company: "",
-    model: "",
-    storage: "",
     sellingPrice: "",
     mrp: "",
-    imei: "",
-    ram: "",
+    guarantee: "",
+    items: [{ model: "", stock: "" }],
   });
 
   const [isBarcodeModalOpen, setIsBarcodeModalOpen] = useState(false);
@@ -928,17 +1163,8 @@ export default function MobilePage() {
     });
   };
 
-  const handleSaveAccessory = () => {
-    setAccessoriesData((prev) => [...prev, { ...accessoryForm, id: Date.now() }]);
-    setAccessoryForm({
-      company: "",
-      model: "",
-      storage: "",
-      sellingPrice: "",
-      mrp: "",
-      imei: "",
-      ram: "",
-    });
+  const handleSaveAccessory = (newEntries) => {
+    setAccessoriesData((prev) => [...prev, ...newEntries]);
   };
 
   return (
@@ -999,7 +1225,7 @@ export default function MobilePage() {
       <Box sx={{ bgcolor: "#f5f5f5", minHeight: "calc(100vh - 80px)", p: 4, borderRadius: "8px" }}>
         <Grid container spacing={3}>
           {activePage === "mobile" && (
-            <EntryForm
+            <MobileEntryForm
               formData={mobileForm}
               setFormData={setMobileForm}
               onSave={handleSaveMobile}
@@ -1011,7 +1237,7 @@ export default function MobilePage() {
           )}
 
           {activePage === "accessories" && (
-            <EntryForm
+            <AccessoriesEntryForm
               formData={accessoryForm}
               setFormData={setAccessoryForm}
               onSave={handleSaveAccessory}
