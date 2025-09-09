@@ -67,8 +67,8 @@ const BarcodeModal = ({ open, handleClose, item, priceMap }) => {
   const barcodeValue = item.imei || encodedPrice;
   
   // Set the target dimensions for the barcode
-  const barcodeWidth = 2; // Corresponds to a specific width on the printout
-  const barcodeHeight = 80; // Corresponds to a specific height on the printout
+  const barcodeWidth = 1; // Corresponds to a specific width on the printout
+  const barcodeHeight = 40; // Corresponds to a specific height on the printout
   const labelWidth = "2in";
   const labelHeight = "1in";
 
@@ -110,20 +110,20 @@ const BarcodeModal = ({ open, handleClose, item, priceMap }) => {
         </IconButton>
 
         <Box id="barcode-print-content" sx={{ width: labelWidth, height: labelHeight, overflow: "hidden" }}>
-          <Typography variant="h6" sx={{ fontWeight: "bold", mb: 1 }}>
+          <Typography variant="h6" sx={{ fontWeight: "bold"}} style={{ marginBottom: '0px' }}>
             {item.company} - {item.model}
           </Typography>
-          <Typography variant="body1" sx={{ mb: 1 }}>
+          <Typography variant="body1" style={{ marginBottom: '0px', marginTop: '0px' }}>
             {item.storage ? `${item.storage} |` : ''} {item.ram ? `${item.ram}`: ''}
           </Typography>
-          <Typography variant="h5" sx={{ fontWeight: "bold" }}>
-            Price: ₹{item.sellingPrice}
+          <Typography variant="h5" sx={{ fontWeight: "bold" }} style={{ marginBottom: '0px', marginTop: '0px' }}>
+            {encodePrice(item.sellingPrice, priceMap)}
           </Typography>
-          <Typography variant="caption" display="block">
-            {item.imei ? "IMEI" : "Price Code"}: {barcodeValue}
+          <Typography variant="caption" display="block" style={{ marginBottom: '0px', marginTop: '0px' }}>
+            {item.imei ? "IMEI" : ""}: {barcodeValue}
           </Typography>
 
-          <Box sx={{ mt: 1 }}>
+          <Box style={{ marginBottom: '0px', marginTop: '0px' }}>
             <Barcode value={barcodeValue} width={barcodeWidth} height={barcodeHeight} fontSize={16} displayValue />
           </Box>
         </Box>
@@ -300,7 +300,7 @@ const BoxLabelModal = ({ open, handleClose, companyOptions, modelOptions, priceM
           {formData.sellingPrice && (
             <Box sx={{ mt: 2 }}>
               <Typography variant="body1">
-                Price: {encodePrice(formData.sellingPrice, priceMap)}
+                {encodePrice(formData.sellingPrice, priceMap)}
               </Typography>
             </Box>
           )}
@@ -321,7 +321,7 @@ const BoxLabelModal = ({ open, handleClose, companyOptions, modelOptions, priceM
 };
 
 // --- Reusable Mobile Form Component ---
-const MobileEntryForm = ({ formData, setFormData, onSave, historyData, openBarcodeModal, companyOptions, modelOptions }) => {
+const MobileEntryForm = ({ formData, setFormData, onSave, historyData, openBarcodeModal, companyOptions, modelOptions, priceMap }) => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value, ...(name === "company" && { model: "" }) }));
@@ -478,7 +478,7 @@ const MobileEntryForm = ({ formData, setFormData, onSave, historyData, openBarco
                   <strong>Specs:</strong> {item.ram} | {item.storage}
                 </Typography>
                 <Typography variant="body2">
-                  <strong>Price:</strong> ₹{item.sellingPrice}
+                  <strong></strong> {encodePrice(item.sellingPrice, priceMap)}
                 </Typography>
                 <Typography variant="body2">
                   <strong>IMEI:</strong> {item.imei || "N/A"}
@@ -706,7 +706,7 @@ const AccessoriesEntryForm = ({ formData, setFormData, onSave, historyData, open
                   <strong>Models:</strong> {item.models.map(m => `${m.model} (${m.stock})`).join(', ')}
                 </Typography>
                 <Typography variant="body2">
-                  <strong>Price:</strong> ₹{item.sellingPrice}
+                  <strong></strong> ₹{item.sellingPrice}
                 </Typography>
                 <Typography variant="body2">
                   <strong>Guarantee:</strong> {item.guarantee || "N/A"}
@@ -1214,6 +1214,7 @@ export default function MobilePage() {
               openBarcodeModal={openBarcodeModal}
               companyOptions={companyOptions}
               modelOptions={modelOptions}
+              priceMap={priceMap}
             />
           )}
 
